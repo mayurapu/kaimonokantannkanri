@@ -9,7 +9,6 @@
         .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
         .box { background: white; border-radius: 15px; padding: 15px; width: 240px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .name { width: 90%; font-size: 18px; font-weight: bold; color: #4ecdc4; border: none; border-bottom: 2px dashed #4ecdc4; text-align: center; margin-bottom: 10px; }
-        /* まとめて変更エリアのスタイル */
         .all-setting { background: #fff; border-radius: 15px; padding: 12px; max-width: 400px; margin: 0 auto 20px auto; box-shadow: 0 4px 8px rgba(0,0,0,0.05); font-weight: bold; color: #555; }
         .all-setting input { width: 80px; text-align: center; padding: 5px; font-size: 15px; border: 2px solid #ddd; border-radius: 8px; margin: 0 5px; }
         .all-btn { background: #4ecdc4; color: white; border: none; padding: 6px 12px; font-size: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
@@ -27,12 +26,50 @@
         .hist-title { margin-top: 10px; font-size: 13px; color: #888; border-top: 1px dashed #eee; padding-top: 5px; text-align: left; }
         .hist-list { list-style: none; padding: 0; margin: 5px 0 0 0; text-align: left; font-size: 13px; max-height: 120px; overflow-y: auto; }
         .hist-list li { padding: 3px 0; border-bottom: 1px solid #fafafa; color: #555; }
+
+        /* 入力補助 */
+        .suggest-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-height: 120px;
+            overflow-y: auto;
+            margin: 5px auto;
+            width: 90%;
+            text-align: left;
+            font-size: 13px;
+        }
+        .suggest-item {
+            padding: 5px;
+            cursor: pointer;
+        }
+        .suggest-item:hover {
+            background: #f0f0f0;
+        }
+
+        /* 人数ボタン */
+        .people-btns button {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
     </style>
 </head>
 <body>
     <h1>💰 おかいもの計算ゲーム 💰</h1>
-    
-    <!-- 全員まとめて変更するエリア -->
+
+    <!-- 人数調整 -->
+    <div class="people-btns">
+        <button onclick="addPerson()">＋ ひとり追加</button>
+        <button onclick="removePerson()">− さいごの人を消す</button>
+    </div>
+
+    <!-- 全員まとめて変更 -->
     <div class="all-setting">
         全員まとめて <input type="number" id="all-start-money" value="1000"> 円に 
         <button class="all-btn" onclick="changeAllStartMoney()">かえる！</button>
@@ -41,11 +78,62 @@
     <div class="container" id="stage"></div>
 
     <script>
-        let historyData = { 1: [], 2: [], 3: [], 4: [] };
-
+        let historyData = {};
+        let personCount = 4;
         let stage = document.getElementById("stage");
-        for (let i = 1; i <= 4; i++) {
+
+        /* -------------------------
+           人数の保存・読み込み
+        ------------------------- */
+        window.onload = function() {
+            let savedCount = localStorage.getItem("sh_person_count");
+            if (savedCount) personCount = parseInt(savedCount);
+
+            for (let i = 1; i <= personCount; i++) {
+                createPersonBox(i);
+
+                let sn = localStorage.getItem("sh_name_" + i);
+                if (sn) document.getElementById("name-" + i).value = sn;
+
+                let ss = localStorage.getItem("sh_start_" + i);
+                if (ss) document.getElementById("start-" + i).value = ss;
+
+                let sh = localStorage.getItem("sh_hist_" + i);
+                historyData[i] = sh ? JSON.parse(sh) : [];
+
+                updateDisplay(i);
+            }
+        };
+
+        function savePersonCount() {
+            localStorage.setItem("sh_person_count", personCount);
+        }
+
+        /* -------------------------
+           人数追加・削除
+        ------------------------- */
+        function addPerson() {
+            personCount++;
+            createPersonBox(personCount);
+            historyData[personCount] = [];
+            updateDisplay(personCount);
+            savePersonCount();
+        }
+
+        function removePerson() {
+            if (personCount <= 1) return alert("これ以上減らせません！");
+            document.getElementById("box-" + personCount).remove();
+            delete historyData[personCount];
+            personCount--;
+            savePersonCount();
+        }
+
+        /* -------------------------
+           人のカード生成
+        ------------------------- */
+        function createPersonBox(i) {
             let defaultName = (i % 2 === 1) ? `👦 ${i}人目` : `👧 ${i}人目`;
+
             stage.innerHTML += `
                 <div class="box" id="box-${i}">
                     <input type="text" id="name-${i}" class="name" value="${defaultName}" onchange="saveData(${i})">
@@ -54,103 +142,157 @@
                     </div>
                     <div class="money">のこり: <span id="money-${i}">1000</span>円</div>
                     <div class="msg" id="msg-${i}"></div>
-                    <input type="text" id="memo-${i}" class="inp" placeholder="なにをかった？">
+
+                    <input type="text" id="memo-${i}" class="inp" placeholder="なにをかった？" oninput="showMemoSuggestions(${i})">
+                    <div id="memo-suggest-${i}" class="suggest-box"></div>
+
                     <input type="number" id="input-${i}" class="inp" placeholder="いくらつかった？">
                     <button class="btn" onclick="calc(${i})">ひく！</button>
+
                     <div class="sub-btns">
                         <button class="undo" onclick="undo(${i})">↩ 1つ消す</button>
                         <button class="reset" onclick="reset(${i})">ぜんぶ消す</button>
                     </div>
+
                     <div class="hist-title">📝 かったものリスト</div>
                     <ul id="hist-${i}" class="hist-list"></ul>
                 </div>`;
         }
 
-        window.onload = function() {
-            for (let i = 1; i <= 4; i++) {
-                let sn = localStorage.getItem("sh_name_" + i);
-                if (sn) document.getElementById("name-" + i).value = sn;
-                let ss = localStorage.getItem("sh_start_" + i);
-                if (ss) document.getElementById("start-" + i).value = ss;
-                let sh = localStorage.getItem("sh_hist_" + i);
-                if (sh) historyData[i] = JSON.parse(sh);
-                updateDisplay(i);
-            }
-        };
-
+        /* -------------------------
+           データ保存
+        ------------------------- */
         function saveData(num) {
             localStorage.setItem("sh_name_" + num, document.getElementById("name-" + num).value);
             localStorage.setItem("sh_start_" + num, document.getElementById("start-" + num).value);
             localStorage.setItem("sh_hist_" + num, JSON.stringify(historyData[num]));
         }
 
-        // 全員の金額をまとめて変更する関数
+        /* -------------------------
+           全員まとめて変更
+        ------------------------- */
         function changeAllStartMoney() {
             let val = parseInt(document.getElementById("all-start-money").value);
             if (isNaN(val) || val < 0) val = 1000;
-            
-            for (let i = 1; i <= 4; i++) {
+
+            for (let i = 1; i <= personCount; i++) {
                 document.getElementById("start-" + i).value = val;
                 updateDisplay(i);
                 saveData(i);
             }
         }
 
+        /* -------------------------
+           個別の開始金額変更
+        ------------------------- */
         function changeStartMoney(num) {
             let st = parseInt(document.getElementById("start-" + num).value);
-            if (isNaN(st) || st < 0) { document.getElementById("start-" + num).value = 1000; }
+            if (isNaN(st) || st < 0) st = 1000;
             updateDisplay(num);
             saveData(num);
         }
 
+        /* -------------------------
+           表示更新
+        ------------------------- */
         function updateDisplay(num) {
             let startMoney = parseInt(document.getElementById("start-" + num).value) || 1000;
-            let spent = 0;
-            for (let i = 0; i < historyData[num].length; i++) spent += historyData[num][i].p;
-            
+            let spent = historyData[num].reduce((a, b) => a + b.p, 0);
             let rem = startMoney - spent;
+
             let msg = document.getElementById("msg-" + num);
             let box = document.getElementById("box-" + num);
 
             if (rem === 0 && spent === startMoney && startMoney > 0) {
-                msg.innerText = "🎉 ぴったり賞！すごい！"; msg.style.color = "#4ecdc4"; box.style.background = "#e8fcf9";
+                msg.innerText = "🎉 ぴったり賞！すごい！";
+                msg.style.color = "#4ecdc4";
+                box.style.background = "#e8fcf9";
             } else if (rem < 0) {
-                msg.innerText = `⚠️ たりないよ！(${Math.abs(rem)}円オーバー)`; msg.style.color = "#ff6b6b"; box.style.background = "#fff0f0"; rem = 0;
+                msg.innerText = `⚠️ たりないよ！(${Math.abs(rem)}円オーバー)`;
+                msg.style.color = "#ff6b6b";
+                box.style.background = "#fff0f0";
+                rem = 0;
             } else {
-                msg.innerText = ""; box.style.background = "white";
+                msg.innerText = "";
+                box.style.background = "white";
             }
 
             document.getElementById("money-" + num).innerText = rem;
+
             let hl = document.getElementById("hist-" + num);
             hl.innerHTML = "";
-            for (let i = 0; i < historyData[num].length; i++) {
-                let item = historyData[num][i];
+            historyData[num].forEach((item, i) => {
                 let li = document.createElement("li");
-                li.innerText = (item.m ? item.m : (i + 1) + "こめ") + " : ➖ " + item.p + "円";
+                li.innerText = (item.m || (i + 1) + "こめ") + " : ➖ " + item.p + "円";
                 hl.appendChild(li);
-            }
+            });
         }
 
+        /* -------------------------
+           計算（ひく）
+        ------------------------- */
         function calc(num) {
             let ip = document.getElementById("input-" + num);
             let me = document.getElementById("memo-" + num);
             let p = parseInt(ip.value);
-            if (isNaN(p) || p <= 0) { alert("お金をすうじでいれてね！"); return; }
+
+            if (isNaN(p) || p <= 0) return alert("お金をすうじでいれてね！");
 
             historyData[num].push({ p: p, m: me.value.trim() });
-            updateDisplay(num); saveData(num);
-            ip.value = ""; me.value = "";
+            updateDisplay(num);
+            saveData(num);
+
+            ip.value = "";
+            me.value = "";
+            document.getElementById("memo-suggest-" + num).innerHTML = "";
         }
 
+        /* -------------------------
+           1つ消す
+        ------------------------- */
         function undo(num) {
-            if (historyData[num].length > 0) { historyData[num].pop(); updateDisplay(num); saveData(num); }
+            if (historyData[num].length > 0) {
+                historyData[num].pop();
+                updateDisplay(num);
+                saveData(num);
+            }
         }
 
+        /* -------------------------
+           全部消す
+        ------------------------- */
         function reset(num) {
             if (confirm("ぜんぶ消してもいいですか？")) {
-                historyData[num] = []; updateDisplay(num); saveData(num);
-                document.getElementById("input-" + num).value = ""; document.getElementById("memo-" + num).value = "";
+                historyData[num] = [];
+                updateDisplay(num);
+                saveData(num);
+                document.getElementById("input-" + num).value = "";
+                document.getElementById("memo-" + num).value = "";
+                document.getElementById("memo-suggest-" + num).innerHTML = "";
             }
+        }
+
+        /* -------------------------
+           入力補助（候補表示）
+        ------------------------- */
+        function showMemoSuggestions(num) {
+            let box = document.getElementById("memo-suggest-" + num);
+            let input = document.getElementById("memo-" + num).value.trim();
+
+            let used = historyData[num].map(x => x.m).filter(x => x);
+
+            if (input === "") {
+                box.innerHTML = used.map(m => `<div class="suggest-item" onclick="selectMemo(${num}, '${m}')">${m}</div>`).join("");
+                return;
+            }
+
+            let filtered = used.filter(m => m.includes(input));
+            box.innerHTML = filtered.map(m => `<div class="suggest-item" onclick="selectMemo(${num}, '${m}')">${m}</div>`).join("");
+        }
+
+        function selectMemo(num, text) {
+            document.getElementById("memo-" + num).value = text;
+            document.getElementById("memo-suggest-" + num).innerHTML = "";
         }
     </script>
 </body>

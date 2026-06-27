@@ -82,6 +82,9 @@
         let personCount = 4;
         let stage = document.getElementById("stage");
 
+        /* ★ 全員共通の買ったもの候補リスト */
+        let globalMemoList = JSON.parse(localStorage.getItem("sh_global_memo_list") || "[]");
+
         /* -------------------------
            人数の保存・読み込み
         ------------------------- */
@@ -238,7 +241,17 @@
 
             if (isNaN(p) || p <= 0) return alert("お金をすうじでいれてね！");
 
-            historyData[num].push({ p: p, m: me.value.trim() });
+            let memoText = me.value.trim();
+
+            // 個人の履歴に追加
+            historyData[num].push({ p: p, m: memoText });
+
+            // ★ 全員共通の候補リストに追加（重複なし）
+            if (memoText && !globalMemoList.includes(memoText)) {
+                globalMemoList.push(memoText);
+                localStorage.setItem("sh_global_memo_list", JSON.stringify(globalMemoList));
+            }
+
             updateDisplay(num);
             saveData(num);
 
@@ -259,7 +272,7 @@
         }
 
         /* -------------------------
-           全部消す
+           全部消す（候補は消さない）
         ------------------------- */
         function reset(num) {
             if (confirm("ぜんぶ消してもいいですか？")) {
@@ -273,21 +286,25 @@
         }
 
         /* -------------------------
-           入力補助（候補表示）
+           入力補助（全員共通）
         ------------------------- */
         function showMemoSuggestions(num) {
             let box = document.getElementById("memo-suggest-" + num);
             let input = document.getElementById("memo-" + num).value.trim();
 
-            let used = historyData[num].map(x => x.m).filter(x => x);
+            let list = globalMemoList;
 
             if (input === "") {
-                box.innerHTML = used.map(m => `<div class="suggest-item" onclick="selectMemo(${num}, '${m}')">${m}</div>`).join("");
+                box.innerHTML = list
+                    .map(m => `<div class="suggest-item" onclick="selectMemo(${num}, '${m}')">${m}</div>`)
+                    .join("");
                 return;
             }
 
-            let filtered = used.filter(m => m.includes(input));
-            box.innerHTML = filtered.map(m => `<div class="suggest-item" onclick="selectMemo(${num}, '${m}')">${m}</div>`).join("");
+            let filtered = list.filter(m => m.includes(input));
+            box.innerHTML = filtered
+                .map(m => `<div class="suggest-item" onclick="selectMemo(${num}, '${m}')">${m}</div>`)
+                .join("");
         }
 
         function selectMemo(num, text) {

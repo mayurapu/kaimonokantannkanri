@@ -9,6 +9,13 @@
         .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
         .box { background: white; border-radius: 15px; padding: 15px; width: 240px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         .name { width: 90%; font-size: 18px; font-weight: bold; color: #4ecdc4; border: none; border-bottom: 2px dashed #4ecdc4; text-align: center; margin-bottom: 10px; }
+        /* まとめて変更エリアのスタイル */
+        .all-setting { background: #fff; border-radius: 15px; padding: 12px; max-width: 400px; margin: 0 auto 20px auto; box-shadow: 0 4px 8px rgba(0,0,0,0.05); font-weight: bold; color: #555; }
+        .all-setting input { width: 80px; text-align: center; padding: 5px; font-size: 15px; border: 2px solid #ddd; border-radius: 8px; margin: 0 5px; }
+        .all-btn { background: #4ecdc4; color: white; border: none; padding: 6px 12px; font-size: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .all-btn:hover { background: #3dbcb4; }
+        .start-setting { font-size: 11px; color: #888; margin-bottom: 5px; }
+        .start-setting input { width: 60px; text-align: center; padding: 2px; border: 1px solid #ccc; border-radius: 4px; }
         .money { font-size: 20px; font-weight: bold; color: #ffbe0b; background: #fffef0; padding: 5px; border-radius: 8px; }
         .msg { font-size: 12px; height: 15px; margin: 5px 0; font-weight: bold; }
         .inp { width: 90%; padding: 6px; margin-bottom: 6px; text-align: center; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
@@ -24,18 +31,27 @@
 </head>
 <body>
     <h1>💰 おかいもの計算ゲーム 💰</h1>
+    
+    <!-- 全員まとめて変更するエリア -->
+    <div class="all-setting">
+        全員まとめて <input type="number" id="all-start-money" value="1000"> 円に 
+        <button class="all-btn" onclick="changeAllStartMoney()">かえる！</button>
+    </div>
+
     <div class="container" id="stage"></div>
 
     <script>
         let historyData = { 1: [], 2: [], 3: [], 4: [] };
 
-        // 4人分の画面を自動で作る
         let stage = document.getElementById("stage");
         for (let i = 1; i <= 4; i++) {
             let defaultName = (i % 2 === 1) ? `👦 ${i}人目` : `👧 ${i}人目`;
             stage.innerHTML += `
                 <div class="box" id="box-${i}">
                     <input type="text" id="name-${i}" class="name" value="${defaultName}" onchange="saveData(${i})">
+                    <div class="start-setting">
+                        はじめのお金: <input type="number" id="start-${i}" value="1000" onchange="changeStartMoney(${i})"> 円
+                    </div>
                     <div class="money">のこり: <span id="money-${i}">1000</span>円</div>
                     <div class="msg" id="msg-${i}"></div>
                     <input type="text" id="memo-${i}" class="inp" placeholder="なにをかった？">
@@ -54,6 +70,8 @@
             for (let i = 1; i <= 4; i++) {
                 let sn = localStorage.getItem("sh_name_" + i);
                 if (sn) document.getElementById("name-" + i).value = sn;
+                let ss = localStorage.getItem("sh_start_" + i);
+                if (ss) document.getElementById("start-" + i).value = ss;
                 let sh = localStorage.getItem("sh_hist_" + i);
                 if (sh) historyData[i] = JSON.parse(sh);
                 updateDisplay(i);
@@ -62,18 +80,39 @@
 
         function saveData(num) {
             localStorage.setItem("sh_name_" + num, document.getElementById("name-" + num).value);
+            localStorage.setItem("sh_start_" + num, document.getElementById("start-" + num).value);
             localStorage.setItem("sh_hist_" + num, JSON.stringify(historyData[num]));
         }
 
+        // 全員の金額をまとめて変更する関数
+        function changeAllStartMoney() {
+            let val = parseInt(document.getElementById("all-start-money").value);
+            if (isNaN(val) || val < 0) val = 1000;
+            
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById("start-" + i).value = val;
+                updateDisplay(i);
+                saveData(i);
+            }
+        }
+
+        function changeStartMoney(num) {
+            let st = parseInt(document.getElementById("start-" + num).value);
+            if (isNaN(st) || st < 0) { document.getElementById("start-" + num).value = 1000; }
+            updateDisplay(num);
+            saveData(num);
+        }
+
         function updateDisplay(num) {
+            let startMoney = parseInt(document.getElementById("start-" + num).value) || 1000;
             let spent = 0;
             for (let i = 0; i < historyData[num].length; i++) spent += historyData[num][i].p;
             
-            let rem = 1000 - spent;
+            let rem = startMoney - spent;
             let msg = document.getElementById("msg-" + num);
             let box = document.getElementById("box-" + num);
 
-            if (rem === 0 && spent === 1000) {
+            if (rem === 0 && spent === startMoney && startMoney > 0) {
                 msg.innerText = "🎉 ぴったり賞！すごい！"; msg.style.color = "#4ecdc4"; box.style.background = "#e8fcf9";
             } else if (rem < 0) {
                 msg.innerText = `⚠️ たりないよ！(${Math.abs(rem)}円オーバー)`; msg.style.color = "#ff6b6b"; box.style.background = "#fff0f0"; rem = 0;

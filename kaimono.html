@@ -3,286 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>おかいもの計算ゲーム（メモつき）</title>
+    <title>おかいもの計算</title>
     <style>
-        body {
-            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-            background-color: #fff9e6;
-            text-align: center;
-            padding: 20px;
-        }
-        h1 {
-            color: #ff6b6b;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            color: #666;
-            margin-bottom: 25px;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .player-box {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            width: 260px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            box-sizing: border-box;
-        }
-        .name-input {
-            width: 90%;
-            font-size: 20px;
-            font-weight: bold;
-            color: #4ecdc4;
-            border: none;
-            border-bottom: 2px dashed #4ecdc4;
-            text-align: center;
-            margin-bottom: 15px;
-            padding: 2px;
-            background: transparent;
-        }
-        .name-input:focus {
-            outline: none;
-            border-bottom: 2px solid #ff6b6b;
-            color: #ff6b6b;
-        }
-        .money {
-            font-size: 22px;
-            font-weight: bold;
-            color: #ffbe0b;
-            margin-bottom: 15px;
-            background: #fffef0;
-            padding: 5px;
-            border-radius: 10px;
-        }
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 90%;
-            margin: 0 auto 10px auto;
-        }
-        .calc-input {
-            width: 100%;
-            padding: 8px;
-            font-size: 15px;
-            text-align: center;
-            border: 2px solid #ddd;
-            border-radius: 10px;
-            box-sizing: border-box;
-        }
-        .action-btn {
-            background-color: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            width: 90%;
-            font-weight: bold;
-            margin: 5px auto;
-            display: block;
-        }
-        .action-btn:hover {
-            background-color: #ff5252;
-        }
-        .control-btns {
-            display: flex;
-            justify-content: space-between;
-            width: 90%;
-            margin: 5px auto;
-            gap: 5px;
-        }
-        .control-btns button {
-            border: none;
-            padding: 6px 0;
-            font-size: 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            flex: 1;
-            color: white;
-        }
-        .undo-btn {
-            background-color: #f7a072;
-        }
-        .undo-btn:hover {
-            background-color: #f5844c;
-        }
-        .reset-btn {
-            background-color: #aaa;
-        }
-        .reset-btn:hover {
-            background-color: #888;
-        }
-        .history-title {
-            margin-top: 15px;
-            font-size: 14px;
-            color: #888;
-            border-top: 2px dashed #eee;
-            padding-top: 10px;
-            text-align: left;
-        }
-        .history-list {
-            list-style: none;
-            padding: 0;
-            margin: 5px 0 0 0;
-            text-align: left;
-            font-size: 14px;
-            max-height: 180px;
-            overflow-y: auto;
-        }
-        .history-list li {
-            padding: 5px 0;
-            border-bottom: 1px solid #fafafa;
-            color: #555;
-            word-break: break-all;
-        }
+        body { font-family: sans-serif; background: #fff9e6; text-align: center; padding: 10px; }
+        .container { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; }
+        .box { background: white; border-radius: 15px; padding: 15px; width: 240px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .name { width: 90%; font-size: 18px; font-weight: bold; color: #4ecdc4; border: none; border-bottom: 2px dashed #4ecdc4; text-align: center; margin-bottom: 10px; }
+        .money { font-size: 20px; font-weight: bold; color: #ffbe0b; background: #fffef0; padding: 5px; border-radius: 8px; }
+        .msg { font-size: 12px; height: 15px; margin: 5px 0; font-weight: bold; }
+        .inp { width: 90%; padding: 6px; margin-bottom: 6px; text-align: center; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { background: #ff6b6b; color: white; border: none; padding: 8px; font-size: 16px; border-radius: 8px; cursor: pointer; width: 90%; font-weight: bold; }
+        .sub-btns { display: flex; width: 90%; margin: 5px auto; gap: 5px; }
+        .sub-btns button { border: none; padding: 5px; font-size: 11px; border-radius: 6px; cursor: pointer; flex: 1; color: white; }
+        .undo { background: #f7a072; }
+        .reset { background: #aaa; }
+        .hist-title { margin-top: 10px; font-size: 13px; color: #888; border-top: 1px dashed #eee; padding-top: 5px; text-align: left; }
+        .hist-list { list-style: none; padding: 0; margin: 5px 0 0 0; text-align: left; font-size: 13px; max-height: 120px; overflow-y: auto; }
+        .hist-list li { padding: 3px 0; border-bottom: 1px solid #fafafa; color: #555; }
     </style>
 </head>
 <body>
-
     <h1>💰 おかいもの計算ゲーム 💰</h1>
-    <div class="subtitle">1000円からつかったお金をひいていこう！</div>
-
-    <div class="container">
-        <!-- 1人目 -->
-        <div class="player-box">
-            <input type="text" class="name-input" value="👦 1人目">
-            <div class="money">のこり: <span id="money-1">1000</span>円</div>
-            <div class="input-group">
-                <input type="text" id="memo-1" class="calc-input" placeholder="なにをかった？">
-                <input type="number" id="input-1" class="calc-input" placeholder="いくらつかった？">
-            </div>
-            <button class="action-btn" onclick="calc(1)">ひく！</button>
-            <div class="control-btns">
-                <button class="undo-btn" onclick="undo(1)">↩ 1つ消す</button>
-                <button class="reset-btn" onclick="reset(1)">ぜんぶ消す</button>
-            </div>
-            <div class="history-title">📝 かったものリスト</div>
-            <ul id="history-1" class="history-list"></ul>
-        </div>
-
-        <!-- 2人目 -->
-        <div class="player-box">
-            <input type="text" class="name-input" value="👧 2人目">
-            <div class="money">のこり: <span id="money-2">1000</span>円</div>
-            <div class="input-group">
-                <input type="text" id="memo-2" class="calc-input" placeholder="なにをかった？">
-                <input type="number" id="input-2" class="calc-input" placeholder="いくらつかった？">
-            </div>
-            <button class="action-btn" onclick="calc(2)">ひく！</button>
-            <div class="control-btns">
-                <button class="undo-btn" onclick="undo(2)">↩ 1つ消す</button>
-                <button class="reset-btn" onclick="reset(2)">ぜんぶ消す</button>
-            </div>
-            <div class="history-title">📝 かったものリスト</div>
-            <ul id="history-2" class="history-list"></ul>
-        </div>
-
-        <!-- 3人目 -->
-        <div class="player-box">
-            <input type="text" class="name-input" value="👦 3人目">
-            <div class="money">のこり: <span id="money-3">1000</span>円</div>
-            <div class="input-group">
-                <input type="text" id="memo-3" class="calc-input" placeholder="なにをかった？">
-                <input type="number" id="input-3" class="calc-input" placeholder="いくらつかった？">
-            </div>
-            <button class="action-btn" onclick="calc(3)">ひく！</button>
-            <div class="control-btns">
-                <button class="undo-btn" onclick="undo(3)">↩ 1つ消す</button>
-                <button class="reset-btn" onclick="reset(3)">ぜんぶ消す</button>
-            </div>
-            <div class="history-title">📝 かったものリスト</div>
-            <ul id="history-3" class="history-list"></ul>
-        </div>
-
-        <!-- 4人目 -->
-        <div class="player-box">
-            <input type="text" class="name-input" value="👧 4人目">
-            <div class="money">のこり: <span id="money-4">1000</span>円</div>
-            <div class="input-group">
-                <input type="text" id="memo-4" class="calc-input" placeholder="なにをかった？">
-                <input type="number" id="input-4" class="calc-input" placeholder="いくらつかった？">
-            </div>
-            <button class="action-btn" onclick="calc(4)">ひく！</button>
-            <div class="control-btns">
-                <button class="undo-btn" onclick="undo(4)">↩ 1つ消す</button>
-                <button class="reset-btn" onclick="reset(4)">ぜんぶ消す</button>
-            </div>
-            <div class="history-title">📝 かったものリスト</div>
-            <ul id="history-4" class="history-list"></ul>
-        </div>
-    </div>
+    <div class="container" id="stage"></div>
 
     <script>
-        // 履歴データをオブジェクトの配列にして管理 [{price: 金額, label: メモ}, ...]
         let historyData = { 1: [], 2: [], 3: [], 4: [] };
 
-        function updateDisplay(playerNum) {
-            let totalSpent = 0;
-            for (let i = 0; i < historyData[playerNum].length; i++) {
-                totalSpent += historyData[playerNum][i].price;
+        // 4人分の画面を自動で作る
+        let stage = document.getElementById("stage");
+        for (let i = 1; i <= 4; i++) {
+            let defaultName = (i % 2 === 1) ? `👦 ${i}人目` : `👧 ${i}人目`;
+            stage.innerHTML += `
+                <div class="box" id="box-${i}">
+                    <input type="text" id="name-${i}" class="name" value="${defaultName}" onchange="saveData(${i})">
+                    <div class="money">のこり: <span id="money-${i}">1000</span>円</div>
+                    <div class="msg" id="msg-${i}"></div>
+                    <input type="text" id="memo-${i}" class="inp" placeholder="なにをかった？">
+                    <input type="number" id="input-${i}" class="inp" placeholder="いくらつかった？">
+                    <button class="btn" onclick="calc(${i})">ひく！</button>
+                    <div class="sub-btns">
+                        <button class="undo" onclick="undo(${i})">↩ 1つ消す</button>
+                        <button class="reset" onclick="reset(${i})">ぜんぶ消す</button>
+                    </div>
+                    <div class="hist-title">📝 かったものリスト</div>
+                    <ul id="hist-${i}" class="hist-list"></ul>
+                </div>`;
+        }
+
+        window.onload = function() {
+            for (let i = 1; i <= 4; i++) {
+                let sn = localStorage.getItem("sh_name_" + i);
+                if (sn) document.getElementById("name-" + i).value = sn;
+                let sh = localStorage.getItem("sh_hist_" + i);
+                if (sh) historyData[i] = JSON.parse(sh);
+                updateDisplay(i);
+            }
+        };
+
+        function saveData(num) {
+            localStorage.setItem("sh_name_" + num, document.getElementById("name-" + num).value);
+            localStorage.setItem("sh_hist_" + num, JSON.stringify(historyData[num]));
+        }
+
+        function updateDisplay(num) {
+            let spent = 0;
+            for (let i = 0; i < historyData[num].length; i++) spent += historyData[num][i].p;
+            
+            let rem = 1000 - spent;
+            let msg = document.getElementById("msg-" + num);
+            let box = document.getElementById("box-" + num);
+
+            if (rem === 0 && spent === 1000) {
+                msg.innerText = "🎉 ぴったり賞！すごい！"; msg.style.color = "#4ecdc4"; box.style.background = "#e8fcf9";
+            } else if (rem < 0) {
+                msg.innerText = `⚠️ たりないよ！(${Math.abs(rem)}円オーバー)`; msg.style.color = "#ff6b6b"; box.style.background = "#fff0f0"; rem = 0;
+            } else {
+                msg.innerText = ""; box.style.background = "white";
             }
 
-            let currentBalance = 1000 - totalSpent;
-            if (currentBalance < 0) currentBalance = 0;
-
-            document.getElementById("money-" + playerNum).innerText = currentBalance;
-
-            let historyListElement = document.getElementById("history-" + playerNum);
-            historyListElement.innerHTML = "";
-            
-            for (let i = 0; i < historyData[playerNum].length; i++) {
-                let item = historyData[playerNum][i];
+            document.getElementById("money-" + num).innerText = rem;
+            let hl = document.getElementById("hist-" + num);
+            hl.innerHTML = "";
+            for (let i = 0; i < historyData[num].length; i++) {
+                let item = historyData[num][i];
                 let li = document.createElement("li");
-                // メモがあれば表示、なければ番号だけ
-                let itemLabel = item.label ? item.label : (i + 1) + "こめ";
-                li.innerText = itemLabel + " : ➖ " + item.price + "円";
-                historyListElement.appendChild(li);
+                li.innerText = (item.m ? item.m : (i + 1) + "こめ") + " : ➖ " + item.p + "円";
+                hl.appendChild(li);
             }
         }
 
-        function calc(playerNum) {
-            let inputElement = document.getElementById("input-" + playerNum);
-            let memoElement = document.getElementById("memo-" + playerNum);
-            
-            let spend = parseInt(inputElement.value);
-            let memoText = memoElement.value.trim();
+        function calc(num) {
+            let ip = document.getElementById("input-" + num);
+            let me = document.getElementById("memo-" + num);
+            let p = parseInt(ip.value);
+            if (isNaN(p) || p <= 0) { alert("お金をすうじでいれてね！"); return; }
 
-            if (!isNaN(spend) && spend > 0) {
-                // 金額とメモをセットにして保存
-                historyData[playerNum].push({
-                    price: spend,
-                    label: memoText
-                });
-                
-                updateDisplay(playerNum);
-                
-                // 入力欄をどちらも空っぽにする
-                inputElement.value = "";
-                memoElement.value = "";
-            }
+            historyData[num].push({ p: p, m: me.value.trim() });
+            updateDisplay(num); saveData(num);
+            ip.value = ""; me.value = "";
         }
 
-        function undo(playerNum) {
-            if (historyData[playerNum].length > 0) {
-                historyData[playerNum].pop();
-                updateDisplay(playerNum);
-            }
+        function undo(num) {
+            if (historyData[num].length > 0) { historyData[num].pop(); updateDisplay(num); saveData(num); }
         }
 
-        function reset(playerNum) {
-            historyData[playerNum] = [];
-            updateDisplay(playerNum);
-            document.getElementById("input-" + playerNum).value = "";
-            document.getElementById("memo-" + playerNum).value = "";
+        function reset(num) {
+            if (confirm("ぜんぶ消してもいいですか？")) {
+                historyData[num] = []; updateDisplay(num); saveData(num);
+                document.getElementById("input-" + num).value = ""; document.getElementById("memo-" + num).value = "";
+            }
         }
     </script>
 </body>

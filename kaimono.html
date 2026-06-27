@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>おかいもの計算ゲーム（なまえ変更つき）</title>
+    <title>おかいもの計算ゲーム（メモつき）</title>
     <style>
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
@@ -24,18 +24,17 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 20px;
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
         }
         .player-box {
             background: white;
             border-radius: 20px;
             padding: 20px;
-            width: 240px;
+            width: 260px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             box-sizing: border-box;
         }
-        /* 名前入力欄のスタイル */
         .name-input {
             width: 90%;
             font-size: 20px;
@@ -62,14 +61,20 @@
             padding: 5px;
             border-radius: 10px;
         }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 90%;
+            margin: 0 auto 10px auto;
+        }
         .calc-input {
-            width: 85%;
-            padding: 10px;
-            font-size: 16px;
+            width: 100%;
+            padding: 8px;
+            font-size: 15px;
             text-align: center;
             border: 2px solid #ddd;
             border-radius: 10px;
-            margin-bottom: 10px;
             box-sizing: border-box;
         }
         .action-btn {
@@ -80,9 +85,10 @@
             font-size: 16px;
             border-radius: 10px;
             cursor: pointer;
-            width: 85%;
+            width: 90%;
             font-weight: bold;
-            margin-bottom: 5px;
+            margin: 5px auto;
+            display: block;
         }
         .action-btn:hover {
             background-color: #ff5252;
@@ -90,7 +96,7 @@
         .control-btns {
             display: flex;
             justify-content: space-between;
-            width: 85%;
+            width: 90%;
             margin: 5px auto;
             gap: 5px;
         }
@@ -115,7 +121,6 @@
         .reset-btn:hover {
             background-color: #888;
         }
-        /* 履歴エリアのスタイル */
         .history-title {
             margin-top: 15px;
             font-size: 14px;
@@ -130,13 +135,14 @@
             margin: 5px 0 0 0;
             text-align: left;
             font-size: 14px;
-            max-height: 150px;
+            max-height: 180px;
             overflow-y: auto;
         }
         .history-list li {
-            padding: 4px 0;
+            padding: 5px 0;
             border-bottom: 1px solid #fafafa;
             color: #555;
+            word-break: break-all;
         }
     </style>
 </head>
@@ -150,7 +156,10 @@
         <div class="player-box">
             <input type="text" class="name-input" value="👦 1人目">
             <div class="money">のこり: <span id="money-1">1000</span>円</div>
-            <input type="number" id="input-1" class="calc-input" placeholder="いくらつかった？">
+            <div class="input-group">
+                <input type="text" id="memo-1" class="calc-input" placeholder="なにをかった？">
+                <input type="number" id="input-1" class="calc-input" placeholder="いくらつかった？">
+            </div>
             <button class="action-btn" onclick="calc(1)">ひく！</button>
             <div class="control-btns">
                 <button class="undo-btn" onclick="undo(1)">↩ 1つ消す</button>
@@ -164,7 +173,10 @@
         <div class="player-box">
             <input type="text" class="name-input" value="👧 2人目">
             <div class="money">のこり: <span id="money-2">1000</span>円</div>
-            <input type="number" id="input-2" class="calc-input" placeholder="いくらつかった？">
+            <div class="input-group">
+                <input type="text" id="memo-2" class="calc-input" placeholder="なにをかった？">
+                <input type="number" id="input-2" class="calc-input" placeholder="いくらつかった？">
+            </div>
             <button class="action-btn" onclick="calc(2)">ひく！</button>
             <div class="control-btns">
                 <button class="undo-btn" onclick="undo(2)">↩ 1つ消す</button>
@@ -178,7 +190,10 @@
         <div class="player-box">
             <input type="text" class="name-input" value="👦 3人目">
             <div class="money">のこり: <span id="money-3">1000</span>円</div>
-            <input type="number" id="input-3" class="calc-input" placeholder="いくらつかった？">
+            <div class="input-group">
+                <input type="text" id="memo-3" class="calc-input" placeholder="なにをかった？">
+                <input type="number" id="input-3" class="calc-input" placeholder="いくらつかった？">
+            </div>
             <button class="action-btn" onclick="calc(3)">ひく！</button>
             <div class="control-btns">
                 <button class="undo-btn" onclick="undo(3)">↩ 1つ消す</button>
@@ -192,7 +207,10 @@
         <div class="player-box">
             <input type="text" class="name-input" value="👧 4人目">
             <div class="money">のこり: <span id="money-4">1000</span>円</div>
-            <input type="number" id="input-4" class="calc-input" placeholder="いくらつかった？">
+            <div class="input-group">
+                <input type="text" id="memo-4" class="calc-input" placeholder="なにをかった？">
+                <input type="number" id="input-4" class="calc-input" placeholder="いくらつかった？">
+            </div>
             <button class="action-btn" onclick="calc(4)">ひく！</button>
             <div class="control-btns">
                 <button class="undo-btn" onclick="undo(4)">↩ 1つ消す</button>
@@ -204,12 +222,13 @@
     </div>
 
     <script>
+        // 履歴データをオブジェクトの配列にして管理 [{price: 金額, label: メモ}, ...]
         let historyData = { 1: [], 2: [], 3: [], 4: [] };
 
         function updateDisplay(playerNum) {
             let totalSpent = 0;
             for (let i = 0; i < historyData[playerNum].length; i++) {
-                totalSpent += historyData[playerNum][i];
+                totalSpent += historyData[playerNum][i].price;
             }
 
             let currentBalance = 1000 - totalSpent;
@@ -221,20 +240,34 @@
             historyListElement.innerHTML = "";
             
             for (let i = 0; i < historyData[playerNum].length; i++) {
+                let item = historyData[playerNum][i];
                 let li = document.createElement("li");
-                li.innerText = (i + 1) + "こめ: ➖ " + historyData[playerNum][i] + "円";
+                // メモがあれば表示、なければ番号だけ
+                let itemLabel = item.label ? item.label : (i + 1) + "こめ";
+                li.innerText = itemLabel + " : ➖ " + item.price + "円";
                 historyListElement.appendChild(li);
             }
         }
 
         function calc(playerNum) {
             let inputElement = document.getElementById("input-" + playerNum);
+            let memoElement = document.getElementById("memo-" + playerNum);
+            
             let spend = parseInt(inputElement.value);
+            let memoText = memoElement.value.trim();
 
             if (!isNaN(spend) && spend > 0) {
-                historyData[playerNum].push(spend);
+                // 金額とメモをセットにして保存
+                historyData[playerNum].push({
+                    price: spend,
+                    label: memoText
+                });
+                
                 updateDisplay(playerNum);
+                
+                // 入力欄をどちらも空っぽにする
                 inputElement.value = "";
+                memoElement.value = "";
             }
         }
 
@@ -249,6 +282,7 @@
             historyData[playerNum] = [];
             updateDisplay(playerNum);
             document.getElementById("input-" + playerNum).value = "";
+            document.getElementById("memo-" + playerNum).value = "";
         }
     </script>
 </body>
